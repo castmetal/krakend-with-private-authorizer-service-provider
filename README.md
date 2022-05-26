@@ -17,7 +17,7 @@
 - RUN:
 
 ```sh
-docker build --build-arg ENV=prod --build-arg LOGIN_SERVICE_URL="{your login service url example: http://localhost:4000}" --build-arg PRIVATE_FLAG="{your endpoint private flag example: private}" --build-arg TOKEN_HEADER="x-auth" -t mykrakend .
+docker build --build-arg ENV=prod --build-arg AUTHORIZER_SERVICE_URL="{your authorizer service url example: http://localhost:8000}" --build-arg LOGIN_SERVICE_URL="{your login service url example: http://localhost:4000}" --build-arg PRIVATE_FLAG="{your endpoint private flag example: private}" --build-arg TOKEN_HEADER="x-auth" -t mykrakend .
 ```
 
 - Run docker exec listening 8001 port tcp and exposing
@@ -29,7 +29,7 @@ docker build --build-arg ENV=prod --build-arg LOGIN_SERVICE_URL="{your login ser
 For local test, run it on your terminal with krakend install, example:
 
 ```sh
-ERROR_FLAG="suno" PRIVATE_FLAG="private" CGO_ENABLED=1 FC_ENABLE=1 TOKEN_HEADER="x-auth" LOGIN_SERVICE_URL="{your_service_url:port}" KRAKEND_PORT=8001 krakend run -d -c ./krakend.json -p 8001
+ERROR_FLAG="suno" PRIVATE_FLAG="private" CGO_ENABLED=1 FC_ENABLE=1 TOKEN_HEADER="x-auth" AUTHORIZER_SERVICE_URL="{your_auth_service_url:port} LOGIN_SERVICE_URL="{your_service_url:port}" KRAKEND_PORT=8001 krakend run -d -c ./krakend.json -p 8001
 ```
 
 ## How this API Gateway Works
@@ -99,7 +99,7 @@ The endpoints section looks like this:
                     "sd": "static",
                     "method": "POST",
                     "host": [
-                        "{{ env "AUTH_SERVICE_URL" }}"
+                        "{{ env "AUTHORIZER_SERVICE_URL" }}"
                     ],
                     "extra_config": {
                         "backend/http": {
