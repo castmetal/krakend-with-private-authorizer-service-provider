@@ -1,0 +1,183 @@
+{
+    "$schema": "https://www.krakend.io/schema/v3.json",
+    "version": 3,
+    "name": "API Gateway",
+    "plugin": {
+        "pattern": ".so",
+        "folder": "/etc/krakend/plugins"
+    },
+    "extra_config": {
+        "router": {
+            "forwarded_by_client_ip": true,
+            "return_error_msg": true
+        },
+        "security/cors": {
+            "allow_origins": [
+                "*"
+            ],
+            "expose_headers": [
+                "Content-Length",
+                "Content-type"
+            ],
+            "max_age": "12h",
+            "allow_methods": [
+                "GET",
+                "HEAD",
+                "PUT",
+                "POST"
+            ],
+            "allow_headers": [
+                "x-auth",
+                "x-authorize",
+                "authorization",
+                "Accept-Encoding",
+                "content-type"
+            ],
+            "allow_credentials": true
+        },
+        "security/http": {
+            "allowed_hosts": [],
+            "ssl_proxy_headers": {},
+            "browser_xss_filter": true
+        },
+        "plugin/http-server": {
+            "name": [
+                "krakend-private-auth-server-response"
+            ],
+            "krakend-private-auth-server-response": {
+                "auth_url": "{{ env "AUTHORIZER_SERVICE_URL" }}/me",
+                "auth_method": "GET",
+                "token_header": "{{ env "TOKEN_HEADER" }}",
+                "params": {},
+                "private_flag": "[{{ env "PRIVATE_FLAG" }}]",
+                "error_flag": "{{ env "ERROR_FLAG" }}"
+            }
+        },
+        "github_com/devopsfaith/krakend-gologging": {
+            "level": "DEBUG",
+            "prefix": "[KRAKEND]",
+            "syslog": false,
+            "stdout": true
+        },
+        "telemetry/influx": {
+            "address": "http://localhost:8086",
+            "ttl": "25s",
+            "db": "krakend",
+            "username": "admin",
+            "password": "SenhaDoCapiroto"
+        },
+        "telemetry/metrics": {
+            "collection_time": "60s",
+            "proxy_disabled": false,
+            "router_disabled": false,
+            "backend_disabled": false,
+            "endpoint_disabled": false,
+            "listen_address": ":8091"
+        },
+        "telemetry/opencensus": {
+            "sample_rate": 100,
+            "reporting_period": 1,
+            "enabled_layers": {
+                "backend": true,
+                "router": true,
+                "pipe": true
+            },
+            "exporters": {
+                "prometheus": {
+                    "port": 9091
+                }
+            }
+        }
+    },
+    "timeout": "20000ms",
+    "cache_ttl": "300s",
+    "output_encoding": "json",
+    "port": 8001,
+    "read_header_timeout": "1s",
+    "endpoints": [
+        {
+            "endpoint": "/health",
+            "extra_config": {
+                "proxy": {
+                    "static": {
+                        "data": {
+                            "status": "ok"
+                        },
+                        "strategy": "always"
+                    }
+                }
+            },
+            "backend": [
+                {
+                    "url_pattern": "/__health",
+                    "host": [
+                        "http://localhost:{{ env "KRAKEND_PORT" }}"
+                    ]
+                }
+            ]
+        },
+        {
+            "endpoint": "/auth/profile",
+            "method": "GET",
+            "output_encoding": "json",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "x-auth",
+                "x-origin",
+                "x-user",
+                "x-request-id",
+                "Accept-Encoding"
+            ],
+            "backend": [
+                {
+                    "url_pattern": "/me",
+                    "encoding": "json",
+                    "sd": "static",
+                    "method": "GET",
+                    "host": [
+                        "{{ env "LOGIN_SERVICE_URL" }}"
+                    ],
+                    "extra_config": {
+                        "backend/http": {
+                            "return_error_details": "{{ env "ERROR_FLAG" }}"
+                        },
+                        "qos/http-cache": {
+                            "shared": false
+                        }
+                    }
+                }
+            ]
+        },
+        {
+            "endpoint": "/auth/validate-token/[{{ env "PRIVATE_FLAG" }}]",
+            "method": "GET",
+            "output_encoding": "json",
+            "input_headers": [
+                "Authorization",
+                "Content-Type",
+                "x-auth",
+                "x-origin",
+                "x-user",
+                "x-request-id",
+                "Accept-Encoding"
+            ],
+            "backend": [
+                {
+                    "url_pattern": "/validate/token",
+                    "encoding": "json",
+                    "sd": "static",
+                    "method": "POST",
+                    "host": [
+                        "{{ env "LOGIN_SERVICE_URL" }}"
+                    ],
+                    "extra_config": {
+                        "backend/http": {
+                            "return_error_details": "{{ env "ERROR_FLAG" }}"
+                        }
+                    }
+                }
+            ]
+        }
+    ]
+}
