@@ -29,7 +29,7 @@ docker build --build-arg ENV=prod --build-arg AUTHORIZER_SERVICE_URL="{your auth
 For local test, run it on your terminal with krakend install, example:
 
 ```sh
-ERROR_FLAG="suno" PRIVATE_FLAG="private" CGO_ENABLED=1 FC_ENABLE=1 TOKEN_HEADER="x-auth" AUTHORIZER_SERVICE_URL="{your_auth_service_url:port}" LOGIN_SERVICE_URL="{your_service_url:port}" KRAKEND_PORT=8001 krakend run -d -c ./krakend.json -p 8001
+ERROR_FLAG="myerror_flag" PRIVATE_FLAG="private" CGO_ENABLED=1 FC_ENABLE=1 TOKEN_HEADER="x-auth" AUTHORIZER_SERVICE_URL="{your_auth_service_url:port}" LOGIN_SERVICE_URL="{your_service_url:port}" KRAKEND_PORT=8001 krakend run -d -c ./krakend.json -p 8001
 ```
 
 ## How this API Gateway Works
