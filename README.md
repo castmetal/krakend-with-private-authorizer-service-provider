@@ -67,7 +67,7 @@ The endpoints section looks like this:
                     "url_pattern": "/list",
                     "encoding": "json",
                     "sd": "static",
-                    "method": "POST",
+                    "method": "GET",
                     "host": [
                         "{{ env "USER_SERVICE_URL" }}"
                     ],
